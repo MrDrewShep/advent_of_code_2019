@@ -6,9 +6,11 @@ class Intcode:
         self.memory = program
 
     def advance(self, steps):
+        """Advances the pointer"""
         self.ptr += steps
 
     def get_opcode(self):
+        """Returns the opcode, where the pointer is currently pointing"""
         return self.memory[self.ptr]
 
     def get_address(self, increment=0):
@@ -26,6 +28,7 @@ class Intcode:
         return param_1 * param_2
 
     def store(self, value, address):
+        """Stores a value at the address given"""
         self.memory[address] = value
 
     def run(self):
