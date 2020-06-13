@@ -10,7 +10,6 @@
 first = 197487
 last = 673251
 
-
 def check_increasing(num):
     return all(int(num[i]) <= int(num[i + 1]) for i in range(len(num) - 1))
 
