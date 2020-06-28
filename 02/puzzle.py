@@ -21,7 +21,7 @@ program[2] = 2
 
 intcode = Intcode(program)
 
-print(f'position 0 contains {intcode.run()}')
+print(f'Answer: At address 0 is the integer {intcode.run()}')
 
 # PART TWO
 # Find the input noun and verb that cause the program to produce the output 
