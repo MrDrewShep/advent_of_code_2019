@@ -1,5 +1,6 @@
 # PART ONE
 # Add opcodes 3 & 4, as well as parameter modes 0 & 1
+# Use system ID 1 for testing
 
 import sys
 sys.path.append('C:\\Users\\Drew\'s Laptop\\OneDrive\\workspace\\advent_of_code\\2019_2')
@@ -13,7 +14,8 @@ def get_program():
 program = get_program()
 user_input = input("What is the ID of the system you want to run? ")
 intcode = Intcode(program, user_input)
-intcode.run()
+print(f'Final output is {intcode.run()}')
 
 # PART TWO
 # Add opcodes 5 - 8, also with support for parameter modes
+# Use system ID 5 for air conditioning

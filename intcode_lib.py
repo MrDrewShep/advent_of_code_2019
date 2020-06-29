@@ -1,10 +1,15 @@
+# Day 2
+# Day 5
+# Day 7
+
 class Intcode:
 
-    def __init__(self, program, user_input=None):
+    def __init__(self, program, user_input=None, phase_setting=None, day_7=False):
         self.ptr = 0
         self.memory = program
-        if user_input:
-            self.user_input = int(user_input)
+        self.user_input = int(user_input) if user_input != None else None
+        self.phase_setting = int(phase_setting) if phase_setting != None else None
+        self.day_7 = day_7 # Special exit instructions on opcode 4 + 99
 
     # DEFINITIONS:
     # Program = my puzzle input
@@ -63,14 +68,23 @@ class Intcode:
         """Opcode 2 returns the multiplication of two values"""
         return self.store(input_1 * input_2, dest_address)
 
+    def opcode_3(self, dest_address):
+        #TODO docstring determines whether to use phase setting or input instr.
+        if self.phase_setting != None:
+            to_store = self.phase_setting
+            self.phase_setting = None
+        else:
+            to_store = self.user_input
+        return self.store(to_store, dest_address)
+
     def store(self, to_store, dest_address):
-        """Stores a value at a given address. Also used for opcode 3."""
+        """Stores a value at a given address."""
         self.memory[dest_address] = to_store
         return to_store
 
     def output(self, source_address):
         """Returns the value at a given address in memory."""
-        return f'The integer at address {source_address} is' \
+        return f'Output at address {source_address} is' \
             f' {self.memory[source_address]}'
 
     def opcode_5(self, input_1, input_2):
@@ -111,7 +125,10 @@ class Intcode:
             second_parameter_mode = self.get_parameter_mode(instruction, "second")
 
             if opcode == 99:
-                return self.memory[0]
+                if self.day_7:
+                    return "HALT"
+                else:
+                    return self.memory[0]
             else:
                 self.advance_ptr()
         
@@ -130,9 +147,12 @@ class Intcode:
             elif opcode == 2:
                 self.opcode_2(input_1, input_2, dest_address)
             elif opcode == 3:
-                self.store(self.user_input, dest_address)
+                self.opcode_3(dest_address)
             elif opcode == 4:
-                print(self.output(source_address))
+                if self.day_7:
+                    return self.memory[source_address]
+                else:
+                    print(self.output(source_address))
             elif opcode == 5:
                 self.opcode_5(input_1, input_2)
             elif opcode == 6:
