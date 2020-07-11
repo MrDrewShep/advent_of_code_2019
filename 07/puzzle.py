@@ -1,6 +1,7 @@
 # PART ONE
 # What is the highest signal that can be sent to the thrusters?
 # Incorporate phase_setting
+# TODO find a better way to access intcode_lib from a level above
 
 import itertools
 import sys

@@ -10,6 +10,7 @@ class Intcode:
         self.user_input = int(user_input) if user_input != None else None
         self.phase_setting = int(phase_setting) if phase_setting != None else None
         self.day_7 = day_7 # Special exit instructions on opcode 4 + 99
+        self.relative_base = 0
 
     # DEFINITIONS:
     # Program = my puzzle input
@@ -24,6 +25,9 @@ class Intcode:
     # PARAMETER MODES:
     # 0 = position = causes the parameter to be interpreted as a position
     # 1 = immediate = causes the parameter to be interpreted as the input
+    # 2 = relative = the parameter is interpreted as a position.
+    #  The address a relative mode parameter refers to is itself plus the 
+    #  current relative base.
 
     def advance_ptr(self):
         """Advances the pointer"""
@@ -54,11 +58,13 @@ class Intcode:
         return parameter
 
     def get_input(self, parameter, parameter_mode):
-        """Returns an integer based on that parameter's mode"""
+        """Returns an integer based on that parameter's mode."""
         if parameter_mode == 0:
             return self.memory[parameter]
         elif parameter_mode == 1:
             return parameter
+        elif parameter_mode == 2: # TODO ????
+            return self.memory[self.relative_base]
 
     def opcode_1(self, input_1, input_2, dest_address):
         """Opcode 1 returns the addition of two values"""
@@ -116,6 +122,11 @@ class Intcode:
                 parameter. Otherwise, it stores 0."""
         self.memory[dest_address] = 1 if input_1 == input_2 else 0
         return self.memory[dest_address]
+    
+    def opcode_9(self, input_1):
+        #TODO add docstring
+        self.relative_base += input_1
+        return self.relative_base
 
     def run(self):
         while True:
@@ -140,7 +151,9 @@ class Intcode:
             if opcode in [1, 2, 3, 7, 8]:
                 dest_address = self.get_next_parameter()
             if opcode in [4]:
-                source_address = self.get_next_parameter()
+                source_address = self.get_next_parameter() #TODO ????
+            if opcode in [9]:
+                input_1 = self.get_next_parameter()
 
             if opcode == 1:
                 self.opcode_1(input_1, input_2, dest_address)
@@ -161,4 +174,6 @@ class Intcode:
                 self.opcode_7(input_1, input_2, dest_address)
             elif opcode == 8:
                 self.opcode_8(input_1, input_2, dest_address)
+            elif opcode == 9:
+                self.opcode_9(input_1)
         
