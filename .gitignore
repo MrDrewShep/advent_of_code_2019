@@ -23,4 +23,6 @@ venv
 __pycache__
 /string_work
 .pytest_cache
+.vscode
 setup.py
+todo.md
