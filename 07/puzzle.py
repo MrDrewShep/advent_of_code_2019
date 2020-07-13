@@ -18,11 +18,11 @@ def part_one():
     phase_setting_permutations = [i for i in itertools.permutations(range(5))]
     largest_output = -9999999
     for perm in phase_setting_permutations:
-        amplifier_a = Intcode(get_software(), 0, perm[0], True).run()
-        amplifier_b = Intcode(get_software(), amplifier_a, perm[1], True).run()
-        amplifier_c = Intcode(get_software(), amplifier_b, perm[2], True).run()
-        amplifier_d = Intcode(get_software(), amplifier_c, perm[3], True).run()
-        amplifier_e = Intcode(get_software(), amplifier_d, perm[4], True).run()
+        amplifier_a = Intcode(get_software(), 0, perm[0], day=7).run()
+        amplifier_b = Intcode(get_software(), amplifier_a, perm[1], day=7).run()
+        amplifier_c = Intcode(get_software(), amplifier_b, perm[2], day=7).run()
+        amplifier_d = Intcode(get_software(), amplifier_c, perm[3], day=7).run()
+        amplifier_e = Intcode(get_software(), amplifier_d, perm[4], day=7).run()
 
         if amplifier_e > largest_output:
             largest_output = amplifier_e
@@ -36,11 +36,11 @@ def part_two():
     phase_setting_permutations = [i for i in itertools.permutations(range(5, 10))]
     largest_output = -9999999
     for perm in phase_setting_permutations:
-        amplifier_a = Intcode(get_software(), None, perm[0], True)
-        amplifier_b = Intcode(get_software(), None, perm[1], True)
-        amplifier_c = Intcode(get_software(), None, perm[2], True)
-        amplifier_d = Intcode(get_software(), None, perm[3], True)
-        amplifier_e = Intcode(get_software(), None, perm[4], True)
+        amplifier_a = Intcode(get_software(), None, perm[0], day=7)
+        amplifier_b = Intcode(get_software(), None, perm[1], day=7)
+        amplifier_c = Intcode(get_software(), None, perm[2], day=7)
+        amplifier_d = Intcode(get_software(), None, perm[3], day=7)
+        amplifier_e = Intcode(get_software(), None, perm[4], day=7)
         a_input = 0
         while True:
             amplifier_a.user_input = a_input

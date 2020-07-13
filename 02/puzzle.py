@@ -19,7 +19,7 @@ program = get_program()
 program[1] = 12
 program[2] = 2
 
-intcode = Intcode(program)
+intcode = Intcode(program, day=2)
 
 print(f'Answer: At address 0 is the integer {intcode.run()}')
 
@@ -32,7 +32,7 @@ for noun in range(0, 100):
         program = get_program()
         program[1] = noun
         program[2] = verb
-        intcode = Intcode(program)
+        intcode = Intcode(program, day=2)
         
         if intcode.run() == 19690720:
             print(f'noun {noun} verb {verb}: {100 * noun + verb}')
