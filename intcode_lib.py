@@ -25,6 +25,7 @@ class Intcode:
 
     def __init__(self, program, user_input=None, phase_setting=None, day=0):
         self.ptr = 0
+        self.parameter_mode_ptr = 0 # Which paramater mode of an instruction has so far been read
         self.memory = program
         self.user_input = int(user_input) if user_input != None else None
         self.phase_setting = int(phase_setting) if phase_setting != None else None
@@ -36,6 +37,11 @@ class Intcode:
         self.ptr += 1
         return self.ptr
 
+    def advance_parameter_mode_ptr(self):
+        """Advances the parameter mode pointer within the instruction."""
+        self.parameter_mode_ptr += 1
+        return self.parameter_mode_ptr
+
     def validate_address(self, address):
         """Returns the address given. If that address does not yet \
             exist, it first expands the memory to include that address."""
@@ -46,25 +52,32 @@ class Intcode:
                 self.memory.append(0)
         return address
 
-    def get_instruction(self):
+    def get_next_instruction(self):
         """Returns the instruction, at the current location of the pointer."""
         instruction = str(self.memory[self.ptr]).zfill(5)
+        self.parameter_mode_ptr = 0
         return instruction
 
     def get_opcode(self, instruction):
         """Returns the opcode of an instruction, as an integer."""
         return int(instruction[-2:])
 
-    def get_parameter_modes(self, instruction):
-        """Returns the parameter modes from an instruction, as integers"""
-        return int(instruction[-3:-2]), int(instruction[-4:-3]), \
-            int(instruction[-5:-4])
-
     def get_next_parameter(self):
         """Returns the next parameter, then advances the pointer."""
         parameter = self.memory[self.ptr]
         self.advance_ptr()
         return parameter
+
+    def get_next_parameter_mode(self, instruction):
+        """Returns the next parameter mode, then advances the pointer."""
+        if self.parameter_mode_ptr == 1:
+            parameter_mode = int(instruction[-3:-2])
+        elif self.parameter_mode_ptr == 2:
+            parameter_mode = int(instruction[-4:-3])
+        elif self.parameter_mode_ptr == 3:
+            parameter_mode = int(instruction[-5:-4])
+        self.advance_parameter_mode_ptr()
+        return parameter_mode
 
     def interpret_parameter_mode_for_input(self, parameter, parameter_mode):
         """Returns an input for the Intcode computer, based upon the \
@@ -98,7 +111,6 @@ class Intcode:
             Intcode uses a phase_setting as the input, if a phase_setting was \
                 provided. Otherwise uses Intcode's given user input."""
         # Writing to memory will never use parameter mode 1, immediate.
-
         if self.phase_setting != None:
             to_store = self.phase_setting
             self.phase_setting = None
@@ -150,7 +162,7 @@ class Intcode:
                 parameter. Otherwise, it stores 0."""
         self.memory[self.validate_address(dest_address)] = 1 if input_1 == input_2 else 0
         return self.memory[dest_address]
-    
+
     def opcode_9(self, input_1, parameter_mode):
         """Adjusts the relative base by the input given."""
         if parameter_mode == 0:
@@ -166,10 +178,8 @@ class Intcode:
     def run(self):
         while True:
             # Parse the next instruction
-            instruction = self.get_instruction()
+            instruction = self.get_next_instruction()
             opcode = self.get_opcode(instruction)
-            first_parameter_mode, second_parameter_mode, third_parameter_mode \
-                = self.get_parameter_modes(instruction)
 
             # Opcode 99 halts the program
             if opcode == 99:
@@ -180,38 +190,42 @@ class Intcode:
                 else:
                     quit()
             else:
-                # Else the opcode will require subsequent parameters
+                # If not halting, the opcode will require subsequent parameters
                 self.advance_ptr()
+                self.advance_parameter_mode_ptr()
 
-            # Get the inputs
+            # Get the parameters
             if opcode in [1, 2, 5, 6, 7, 8]:
-                input_1 = self.interpret_parameter_mode_for_input(self.get_next_parameter(), \
-                    first_parameter_mode)
-                input_2 = self.interpret_parameter_mode_for_input(self.get_next_parameter(), \
-                    second_parameter_mode)
-            if opcode in [3]:
-                dest_address = self.interpret_parameter_mode_for_writing(self.get_next_parameter(), \
-                    first_parameter_mode)
-            if opcode in [1, 2, 7, 8]:
-                dest_address = self.interpret_parameter_mode_for_writing(self.get_next_parameter(), \
-                    third_parameter_mode)
+                input_1 = self.interpret_parameter_mode_for_input(
+                    self.get_next_parameter(),
+                    self.get_next_parameter_mode(instruction)
+                    )
+                input_2 = self.interpret_parameter_mode_for_input(
+                    self.get_next_parameter(),
+                    self.get_next_parameter_mode(instruction)
+                    )
+            if opcode in [1, 2, 3, 7, 8]:
+                dest_address = self.interpret_parameter_mode_for_writing(
+                    self.get_next_parameter(),
+                    self.get_next_parameter_mode(instruction)
+                    )
             if opcode in [4]:
                 source_address = self.get_next_parameter()
             if opcode in [9]:
                 input_1 = self.get_next_parameter()
 
-            # Feed the inputs to the opcode executor
+            # Feed the parameters to the respective opcode execution
             if opcode == 1:
                 self.opcode_1(input_1, input_2, dest_address)
             elif opcode == 2:
                 self.opcode_2(input_1, input_2, dest_address)
             elif opcode == 3:
-                self.opcode_3(dest_address, first_parameter_mode)
+                self.opcode_3(dest_address, self.get_next_parameter_mode(instruction))
             elif opcode == 4:
                 if self.day in [7]:
                     return self.memory[source_address]
                 else:
-                    print(self.output(source_address, first_parameter_mode))
+                    print(self.output(source_address, self.get_next_parameter_mode(instruction)))
             elif opcode == 5:
                 self.opcode_5(input_1, input_2)
             elif opcode == 6:
@@ -221,5 +235,5 @@ class Intcode:
             elif opcode == 8:
                 self.opcode_8(input_1, input_2, dest_address)
             elif opcode == 9:
-                self.opcode_9(input_1, first_parameter_mode)
+                self.opcode_9(input_1, self.get_next_parameter_mode(instruction))
         
