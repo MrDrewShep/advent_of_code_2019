@@ -21,6 +21,8 @@
 #  The address a relative mode parameter refers to is itself plus the 
 #  current relative base.
 
+# TODO Can I further refactor any of parameter mode interpretation btwn opcodes 3/4?
+
 class Intcode:
 
     def __init__(self, program, user_input=None, phase_setting=None, day=0):
@@ -130,7 +132,9 @@ class Intcode:
         elif parameter_mode == 1:
             output = parameter
         elif parameter_mode == 2:
-            output = self.memory[self.validate_address(self.relative_base + parameter)]
+            output = self.memory[
+                self.validate_address(self.relative_base + parameter)
+                ]
         return f'Output is {output}'
 
     def opcode_5(self, input_1, input_2):
@@ -220,12 +224,20 @@ class Intcode:
             elif opcode == 2:
                 self.opcode_2(input_1, input_2, dest_address)
             elif opcode == 3:
-                self.opcode_3(dest_address, self.get_next_parameter_mode(instruction))
+                self.opcode_3(
+                    dest_address,
+                    self.get_next_parameter_mode(instruction)
+                    )
             elif opcode == 4:
                 if self.day in [7]:
                     return self.memory[source_address]
                 else:
-                    print(self.output(source_address, self.get_next_parameter_mode(instruction)))
+                    print(
+                        self.output(
+                            source_address,
+                            self.get_next_parameter_mode(instruction)
+                            )
+                        )
             elif opcode == 5:
                 self.opcode_5(input_1, input_2)
             elif opcode == 6:
@@ -235,5 +247,8 @@ class Intcode:
             elif opcode == 8:
                 self.opcode_8(input_1, input_2, dest_address)
             elif opcode == 9:
-                self.opcode_9(input_1, self.get_next_parameter_mode(instruction))
+                self.opcode_9(
+                    input_1,
+                    self.get_next_parameter_mode(instruction)
+                    )
         
