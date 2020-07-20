@@ -44,6 +44,11 @@ class Intcode:
         self.parameter_mode_ptr += 1
         return self.parameter_mode_ptr
 
+    def update_user_input(self, new_user_input):
+        """Updates the Intcode's user_input attribute"""
+        self.user_input = new_user_input
+        return self.user_input
+
     def validate_address(self, address):
         """Returns the address given. If that address does not yet \
             exist, it first expands the memory to include that address."""
@@ -135,7 +140,7 @@ class Intcode:
             output = self.memory[
                 self.validate_address(self.relative_base + parameter)
                 ]
-        return f'Output is {output}'
+        return output#TODO remove this later f'Output is {output}'
 
     def opcode_5(self, input_1, input_2):
         """Jump if true. If the first parameter is non-zero, it sets the \
@@ -187,7 +192,7 @@ class Intcode:
 
             # Opcode 99 halts the program
             if opcode == 99:
-                if self.day in [7]:
+                if self.day in [7, 11]:
                     return "HALT"
                 elif self.day in [2]:
                     return self.memory[0]
@@ -231,6 +236,11 @@ class Intcode:
             elif opcode == 4:
                 if self.day in [7]:
                     return self.memory[source_address]
+                elif self.day in [11]: #TODO figure out how to grab these values
+                    return self.output(
+                            source_address,
+                            self.get_next_parameter_mode(instruction)
+                            )
                 else:
                     print(
                         self.output(
