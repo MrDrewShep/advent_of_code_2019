@@ -15,7 +15,6 @@ sys.path.append('C:\\Users\\Drew\'s Laptop\\OneDrive\\workspace\\advent_of_code\
 from intcode_lib import Intcode
 import numpy as np
 from collections import deque
-from pprint import pprint
 
 def get_program():
     with open("data.txt") as f:
@@ -32,12 +31,17 @@ class Robot():
         self.registration = registration
 
     def detect_user_input(self):
+        """Returns the color of the panel over which the robot is hovering.\
+            0 if black. 1 if white."""
         return self.registration.get_panel_color(self.y, self.x)
 
     def paint_panel(self, color):
+        """Updates the current registration panel with the color provided."""
         return self.registration.update_panel_color(color)
 
     def move(self, turn):
+        """Moves the robot. Expands the dimensions of the registration panel \
+            grid, if necessary."""
         if turn == 0:
             self.facing.rotate(1)
         elif turn == 1:
@@ -45,26 +49,26 @@ class Robot():
 
         if self.facing[0] == "up":
             if self.y == 0:
-                self.registration.new_row_top()
+                self.registration.insert_new_top_row()
                 self.y += 1
             self.y -= 1
         elif self.facing[0] == "right":
             if self.x == self.registration.grid.shape[1] - 1:
-                self.registration.new_col_right()
+                self.registration.append_new_col_right()
             self.x += 1
         elif self.facing[0] == "down":
             if self.y == self.registration.grid.shape[0] - 1:
-                self.registration.new_row_bottom()
+                self.registration.append_new_bottom_row()
             self.y += 1
         elif self.facing[0] == "left":
             if self.x == 0:
-                self.registration.new_col_left()
+                self.registration.insert_new_col_left()
                 self.x += 1
             self.x -= 1
 
-
     def run_intcode(self):
-        for _ in range(9999):
+        """Runs the program to completion."""
+        while True:
             self.robot.update_user_input(self.detect_user_input())
 
             paint_color = self.robot.run()
@@ -75,10 +79,7 @@ class Robot():
             self.registration.paint_panel(self.y, self.x, paint_color)
             self.move(turn)
 
-            # print(paint_color, turn)
-            # print(self.registration)
-
-        return f'sum is: {self.registration.change_grid.sum()}'
+        return f'Panels painted: {self.registration.change_grid.sum()}'
 
 
 class Registration():
@@ -90,23 +91,45 @@ class Registration():
     def __repr__(self):
         return f'{self.grid}\n{self.change_grid}'
 
-    def new_row_bottom(self):
+    def append_new_bottom_row(self):
+        """Adds a new row at the bottom."""
         self.grid = np.vstack((self.grid, np.full(self.grid.shape[1], ".")))
-        self.change_grid = np.vstack((self.change_grid, np.full(self.change_grid.shape[1], 0)))
+        self.change_grid = np.vstack(
+            (self.change_grid, np.full(self.change_grid.shape[1], 0))
+            )
 
-    def new_row_top(self):
+    def insert_new_top_row(self):
+        """Inserts a new row at the top."""
         self.grid = np.vstack((np.full(self.grid.shape[1], "."), self.grid))
-        self.change_grid = np.vstack((np.full(self.change_grid.shape[1], 0), self.change_grid))
+        self.change_grid = np.vstack(
+            (np.full(self.change_grid.shape[1], 0), self.change_grid)
+            )
 
-    def new_col_right(self):
-        self.grid = np.hstack((self.grid, np.full(self.grid.shape[0], ".").reshape(self.grid.shape[0], 1)))
-        self.change_grid = np.hstack((self.change_grid, np.full(self.change_grid.shape[0], 0).reshape(self.change_grid.shape[0], 1)))
+    def append_new_col_right(self):
+        """Adds a new column on the right."""
+        self.grid = np.hstack(
+            (self.grid, np.full(
+                self.grid.shape[0], ".").reshape(self.grid.shape[0], 1)
+                )
+            )
+        self.change_grid = np.hstack(
+            (self.change_grid, np.full(
+                self.change_grid.shape[0], 0).reshape(self.change_grid.shape[0], 1)
+                )
+            )
 
-    def new_col_left(self):
-        self.grid = np.hstack((np.full(self.grid.shape[0], ".").reshape(self.grid.shape[0], 1), self.grid))
-        self.change_grid = np.hstack((np.full(self.change_grid.shape[0], 0).reshape(self.change_grid.shape[0], 1), self.change_grid))
+    def insert_new_col_left(self):
+        """Inserts a new column on the left."""
+        self.grid = np.hstack(
+            (np.full(self.grid.shape[0], ".").reshape(self.grid.shape[0], 1), self.grid)
+            )
+        self.change_grid = np.hstack(
+            (np.full(self.change_grid.shape[0], 0).reshape(self.change_grid.shape[0], 1), self.change_grid)
+            )
 
     def get_panel_color(self, y, x):
+        """Returns the color of a given panel. \
+            0 = black. 1 = white."""
         panel = self.grid[y,x]
         if panel == ".":
             return 0
@@ -114,6 +137,7 @@ class Registration():
             return 1
     
     def paint_panel(self, y, x, paint_color):
+        """Paints a given panel a given color."""
         if paint_color == 0:
             output = "."
         elif paint_color == 1:
@@ -128,19 +152,23 @@ robot = Robot(registration)
 print(robot.run_intcode())
 
 # PART TWO
-# a valid registration identifier is always eight capital letters. 
+# A valid registration identifier is always eight capital letters. 
 # After starting the robot on a single white panel instead, what registration 
 # identifier does it paint on your hull?
 
 registration = Registration()
+# For part two we change the starting panel to white.
 registration.paint_panel(2, 2, 1)
 robot = Robot(registration)
 robot.run_intcode()
+
 x = registration.grid.shape[1]
 y = registration.grid.shape[0]
 display = str()
 for row in range(y):
     for col in range(x):
-        display += registration.grid[row,col]
+        char = registration.grid[row,col]
+        display += " " if char == "." else "#"
     display += "\n"
+
 print(display)
